@@ -1,6 +1,7 @@
 'use strict';
 const dbUtils = require('./utils')
 const config = require('../../utils/config.js')
+const Security = require('../../utils/accessLevels')
 
 const _this = this
 
@@ -1079,4 +1080,210 @@ exports.deleteCollectionMetadataKey = async function ( collectionId, key ) {
   binds.push(`$."${key}"`, collectionId)
   let [rows] = await dbUtils.pool.query(sql, binds)
   return rows.length > 0 ? rows[0].value : ""
+}
+
+
+/*
+Available only to level 3 or 4 users ("Manage" or "Owner")
+Returns number of history entries deleted.
+RetentionDate - Delete all review history entries prior to the specified date.
+Asset Id - if provided, only delete entries for that asset.
+*/
+exports.deleteReviewHistoryByCollection = async function (collectionId, retentionDate, assetId) {
+  let sql = `
+    DELETE rh 
+    FROM review_history rh 
+      INNER JOIN review r on rh.reviewId = r.reviewId
+      INNER JOIN asset a on r.assetId = a.assetId
+    WHERE a.collectionId = :collectionId
+      AND rh.ts < :retentionDate`
+
+  if(assetId) {
+    sql += ' AND a.assetId = :assetId'
+  }
+
+  let binds = {
+    collectionId: collectionId,
+    retentionDate: retentionDate,
+    assetId: assetId
+  }  
+
+  let [rows] = await dbUtils.pool.query(sql, binds)
+  let result = {
+    HistoryEntriesDeleted: rows.affectedRows
+  }
+  return (result)
+}
+
+/*
+GET /collections/{collectionId}/review-history
+Available to level 2 and higher users with a grant to the collection.
+Returns block of review history entries that fit criteria. Takes optional:
+Start Date
+End Date
+(If no dates provided, return all history. If only one date, return block from that date to current, or that date to oldest, as appropriate)
+Asset ID - only return history for this asset id
+Rule ID - only return history for this rule id
+status- only return history with this status
+If rule and asset id provided, return that intersection.
+*/
+exports.getReviewHistoryByCollection = async function (collectionId, startDate, endDate, assetId, ruleId, status) {
+  let binds = {
+    collectionId: collectionId
+  }
+  
+  let sql = `
+    SELECT a.assetId, 
+      (select coalesce(
+        (select json_arrayagg(
+          json_object
+            (
+            'ruleId', rv.ruleId,
+            'ts', rh.ts, 
+            'result', result.api,
+            'resultComment', rh.resultComment,
+            'action', action.api,
+            'actionComment', rh.actionComment,
+            'autoResult', rh.autoResult = 1,
+            'status', status.api,
+            'userId', rh.userId,
+            'username', ud.username,
+            'rejectText', rh.rejectText,
+            'rejectUserId', rh.rejectUserId
+            )
+          )
+          FROM review_history rh
+            INNER JOIN review rv on rh.reviewId = rv.reviewId
+            INNER JOIN user_data ud on rh.userId = ud.userId
+            INNER JOIN result on rh.resultId = result.resultId
+            INNER JOIN status on rh.statusId = status.statusId
+            INNER JOIN action on rh.actionId = action.actionId
+          WHERE rv.assetId = a.assetId`
+
+  if (startDate) {
+    binds.startDate = startDate
+    sql += " AND rh.ts >= :startDate"
+  }
+
+  if (endDate) {
+    binds.endDate = endDate
+    sql += " AND rh.ts <= :endDate"
+  }
+
+  if(ruleId) {
+    binds.ruleId = ruleId
+    sql += " AND rv.ruleId = :ruleId"
+  }
+
+  if(status) {
+    binds.statusId = dbUtils.REVIEW_STATUS_API[status]
+    sql += ' AND rh.statusId = :statusId'
+  }
+  
+  sql += `
+          ), json_array()
+        )
+      ) as history
+    FROM asset a
+    WHERE a.collectionId = :collectionId
+  `
+
+  if(assetId) {
+    binds.assetId = assetId
+    sql += " AND a.assetId = :assetId"
+  }
+
+  try {
+    let [rows] = await dbUtils.pool.query(sql, binds)
+    return (rows)
+  }
+  catch(err) {
+    throw ( {status: 500, message: err.message, stack: err.stack} ) 
+  }
+}
+
+/*
+GET /collections/{collectionId}/review-history/stats
+Available to level 2 and higher users with a grant to the collection.
+Return some simple stats about the number/properties of history entries.
+Uses same params as GET review-history, expecting stats to be scoped to whatever would be returned by that query.
+Projection: asset - Break out statistics by Asset in the specified collection
+*/
+exports.getReviewHistoryStatsByCollection = async function (collectionId, startDate, endDate, assetId, ruleId, status, projection) {
+
+  let binds = {
+    collectionId: collectionId
+  }
+
+  let sql = 'SELECT COUNT(*) as collectionHistoryEntryCount, MIN(rh.ts) as oldestHistoryEntryDate'
+
+  if (projection && projection.includes('asset')) {
+    sql += `, coalesce(
+      (SELECT json_arrayagg(
+        json_object(
+          'assetId', assetId,
+          'historyEntryCount', historyEntryCount,
+          'oldestHistoryEntry', oldestHistoryEntry
+          )
+        )
+        FROM 
+        (
+          SELECT a.assetId, COUNT(*) as historyEntryCount, MIN(rh.ts) as oldestHistoryEntry
+          FROM review_history rh
+            INNER JOIN review rv on rh.reviewId = rv.reviewId
+            INNER JOIN asset a on rv.assetId = a.assetId
+          WHERE a.collectionId = :collectionId
+          additionalPredicates
+          GROUP BY a.assetId
+        ) v
+      ), json_array()
+      ) as assetHistoryEntryCounts`
+  }
+
+  sql += `
+    FROM review_history rh
+      INNER JOIN review rv on rh.reviewId = rv.reviewId
+      INNER JOIN asset a on rv.assetId = a.assetId
+    WHERE a.collectionId = :collectionId
+    additionalPredicates
+  `
+
+  let additionalPredicates = ""
+
+  if (startDate) {
+    binds.startDate = startDate
+    additionalPredicates += " AND rh.ts >= :startDate"
+  }
+
+  if (endDate) {
+    binds.endDate = endDate
+    additionalPredicates += " AND rh.ts <= :endDate"
+  }
+
+  if(ruleId) {
+    binds.ruleId = ruleId
+    additionalPredicates += " AND rv.ruleId = :ruleId"
+  }
+
+  if(status) {
+    binds.statusId = dbUtils.REVIEW_STATUS_API[status]
+    additionalPredicates += ' AND rh.statusId = :statusId'
+  }
+  
+  if(assetId) {
+    binds.assetId = assetId
+    additionalPredicates += " AND a.assetId = :assetId"
+  }
+
+  sql = sql.replace(/additionalPredicates/g, additionalPredicates)
+
+
+  try {
+    let [rows] = await dbUtils.pool.query(sql, binds)
+    return (rows[0])
+  }
+  catch(err) {
+    throw ( {status: 500, message: err.message, stack: err.stack} ) 
+  }
+
 }

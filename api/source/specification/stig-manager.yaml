@@ -1646,6 +1646,93 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection'
+  '/collections/{collectionId}/review-history':
+    parameters:
+      - $ref: '#/components/parameters/CollectionIdPath'
+    get:
+      tags:
+        - Collection
+      summary: Return history records for the specified Collection that meet the specified criteria
+      operationId: getReviewHistoryByCollection
+      parameters: 
+        - $ref: '#/components/parameters/StartDateQuery' # Upper (most recent) bound of returned history entry timestamps
+        - $ref: '#/components/parameters/EndDateQuery'    # Lower (earliest) bound of returned history entry timestamps 
+        - $ref: '#/components/parameters/AssetIdQuery'  # return review history entries for just the specified assetId, if provided.
+        - $ref: '#/components/parameters/RuleIdQuery'  # return review history entries for just the specified RuleId, if provided.        
+        - $ref: '#/components/parameters/ReviewStatusQuery' # return review history entries with the specified status
+      responses:
+        '200':
+          description: ReviewHistory response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReviewHistoryAsset'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection:read'
+    delete:
+      tags:
+        - Collection
+      summary: Remove history records that meet specified criteria
+      operationId: deleteReviewHistoryByCollection
+      parameters: 
+        - $ref: '#/components/parameters/RetentionDateQuery' # Review History Entries older than this date will be deleted.
+        - $ref: '#/components/parameters/AssetIdQuery'  # Apply operation to just the specified assetId, if provided.
+      responses:
+        '200':
+          description: Number of history records deleted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewHistoryDeleted'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection'            
+  '/collections/{collectionId}/review-history/stats':
+    parameters:
+      - $ref: '#/components/parameters/CollectionIdPath'
+    get:
+      tags:
+        - Collection
+      summary: Return history statistics for the specified Collection
+      operationId: getReviewHistoryStatsByCollection
+      parameters:
+        - $ref: '#/components/parameters/StartDateQuery' # Upper (most recent) bound of history entry timestamps
+        - $ref: '#/components/parameters/EndDateQuery'    # Lower (earliest) bound of history entry timestamps 
+        - $ref: '#/components/parameters/AssetIdQuery'  # return review history stats for just the specified assetId, if provided.
+        - $ref: '#/components/parameters/RuleIdQuery'  # return review history stats for just the specified RuleId, if provided.        
+        - $ref: '#/components/parameters/ReviewStatusQuery' # return review history stats with the specified status        
+        - $ref: '#/components/parameters/ReviewHistoryStatsProjectionQuery' 
+      responses:
+        '200':
+          description: ReviewHistoryStats response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewHistoryStats'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection:read'            
   '/collections/{collectionId}/status':
     parameters:
       - $ref: '#/components/parameters/CollectionIdPath'
@@ -3221,6 +3308,9 @@ components:
       enum:
         - continuous
         - emass
+    Date:
+      type: string
+      pattern: '^\d{4}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[0-1])$'        
     EmassAp:
       type: object
       properties:
@@ -3447,6 +3537,8 @@ components:
     ReviewHistory:
       type: object
       properties:
+        ruleId:
+          type: string        
         ts:
           type: string
         result:
@@ -3461,8 +3553,6 @@ components:
           nullable: true
         autoResult:
           type: boolean
-        metadata:
-          $ref: '#/components/schemas/Metadata'
         status:
           $ref: '#/components/schemas/ReviewStatus'
         userId:
@@ -3471,6 +3561,92 @@ components:
           type: string
         rejectText:
           type: string
+          nullable: true
+        rejectUserId:
+          type: string
+          nullable: true
+      required: 
+        - ts      
+        - result
+        - resultComment
+        - action
+        - actionComment 
+        - autoResult
+        - status
+        - userId         
+        - username
+        - rejectText
+    ReviewHistoryAsset:
+      type: object
+      properties:
+        assetId:
+          type: string
+        history:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReviewHistory'   
+      required: 
+        - assetId
+        - history
+    ReviewHistoryDeleted:     
+      type: object
+      properties:
+        HistoryEntriesDeleted: 
+          type: integer   
+    ReviewHistoryStat:
+      type: object
+      properties:
+        historyEntryCount: 
+          type: integer
+        oldestHistoryEntryDate: 
+          type: string
+    ReviewHistoryStats:
+      type: object
+      properties:
+        collectionHistoryEntryCount: 
+          type: integer
+        oldestHistoryEntryDate: 
+          type: string
+          nullable: true
+        assetHistoryEntryCounts:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReviewHistoryStatsAssetProjected'
+      required:
+        - collectionHistoryEntryCount
+        - oldestHistoryEntryDate
+    ReviewHistoryStatsAssetProjected:
+      type: object
+      properties:
+        assetId:
+          type: string
+        historyEntryCount:
+          type: integer
+        oldestHistoryEntry:
+          type: string
+          nullable: true
+        # ruleHistoryStats:
+        #   type: array
+        #   items:
+        #     $ref: '#/components/schemas/ReviewHistoryStatsAssetRuleProjected'
+      required: 
+        - assetId
+        - historyEntryCount
+        - oldestHistoryEntry
+    ReviewHistoryStatsAssetRuleProjected:
+      type: object
+      properties:
+        ruleId:
+          type: string
+        historyEntryCount:
+          type: integer
+        oldestHistoryEntry:
+          type: string
+          nullable: true
+      required: 
+        - ruleId
+        - historyEntryCount
+        - oldestHistoryEntry
     ReviewPut:
       type: object
       required:
@@ -3949,6 +4125,12 @@ components:
         enum:
           - continuous
           - emass
+    EndDateQuery:
+      name: endDate
+      in: query
+      description: History entries with a timestamp after the specified end date.
+      schema:
+        $ref: '#/components/schemas/Date'
     ElevateQuery:
       name: elevate
       in: query
@@ -4058,6 +4240,13 @@ components:
         enum:
           - ruleId
           - groupId
+    RetentionDateQuery:
+      name: retentionDate
+      in: query
+      description: Delete history entries with a timestamp earlier than the specified retention date.
+      required: true
+      schema:
+        $ref: '#/components/schemas/Date'
     ReviewActionQuery:
       name: action
       in: query
@@ -4079,6 +4268,19 @@ components:
             - rule
             - stigs
             - history
+    ReviewHistoryStatsProjectionQuery:
+      name: projection
+      in: query
+      description: |
+        Return review history statistics with the specified level of granularity.
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+            - asset
     ReviewsProjectionQuery:
       name: projection
       in: query
@@ -4164,6 +4366,12 @@ components:
             - ccis
             - checks
             - fixes
+    StartDateQuery:
+      name: startDate
+      in: query
+      description: History entries with a timestamp before the specified start date.
+      schema:
+        $ref: '#/components/schemas/Date'            
     StigAssetsProjectionQuery:
       name: projection
       in: query
