@@ -616,9 +616,9 @@ exports.getAppInfo = async function() {
     ud.created, 
     ud.lastAccess,
     coalesce(
-      JSON_EXTRACT(ud.lastClaims, "$.${config.oauth.claims.privilegesPath}"),
+      JSON_EXTRACT(ud.lastClaims, '$.${config.oauth.claims.privilegesPath}'),
       json_array()
-    ) as privileges,
+  ) as privileges,
     json_object(
 		  "restricted", sum(case when cg.roleId = 1 then 1 else 0 end),
       "full", sum(case when cg.roleId = 2 then 1 else 0 end),

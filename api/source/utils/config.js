@@ -77,7 +77,7 @@ const config = {
             servicename: process.env.STIGMAN_JWT_SERVICENAME_CLAIM,
             name: process.env.STIGMAN_JWT_NAME_CLAIM || process.env.STIGMAN_JWT_USERNAME_CLAIM || "name",
             privileges: formatChain(process.env.STIGMAN_JWT_PRIVILEGES_CLAIM || "realm_access.roles"),
-            privilegesPath: process.env.STIGMAN_JWT_PRIVILEGES_CLAIM || "realm_access.roles",
+            privilegesPath: formatPrivilegesPathForMysql(process.env.STIGMAN_JWT_PRIVILEGES_CLAIM) || "realm_access.roles",
             email: process.env.STIGMAN_JWT_EMAIL_CLAIM || "email",
             assertion: process.env.STIGMAN_JWT_ASSERTION_CLAIM || "jti"
         }
@@ -100,5 +100,20 @@ function formatChain(path) {
     }
     return components.join('?.')
   }
+
+  function formatPrivilegesPathForMysql(path) {
+    if (!path) return path
+    const components = path.split('.')
+    // Handle each component and wrap special cases in double quotes
+    const escapedComponents = components.map(component => {
+        // If component contains special characters (hyphens, spaces, etc)
+        // or starts with a number, wrap it in double quotes
+        if (/[^a-zA-Z0-9_]/.test(component) || /^\d/.test(component)) {
+            return `"${component}"`
+        }
+        return component
+    })
+    return escapedComponents.join('.')
+}
   
 module.exports = config
