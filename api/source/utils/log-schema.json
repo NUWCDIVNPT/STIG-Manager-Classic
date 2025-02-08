@@ -129,6 +129,9 @@
                 "clientId": {
                   "type": "string"
                 },
+                "displayAppManagers": {
+                  "type": "boolean"
+                },
                 "authority": {
                   "type": "string"
                 },

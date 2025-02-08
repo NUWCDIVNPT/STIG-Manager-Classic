@@ -1110,11 +1110,59 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
   border: none;
   margin: 10px;
   height: 400px;
-  width: 380px
+  width: 380px;
 }
+
+.sm-scroll-home-widget-body {
+  max-height: 340px; 
+  overflow: auto;
+  scrollbar-width: thin;
+  margin-right: 8px;
+  margin-top: 5px;
+}
+
+.sm-user-list {
+  list-style: none;
+  max-height: 340px;
+  padding : 0;
+  margin-left: 0;
+
+}
+
+.sm-user-item {
+  padding: 3px;
+  display: flex;
+  align-items: left;
+}
+
+.sm-user-item::before {
+  content: "• ";
+  font-size: 16px;
+  color: #dedede; 
+  margin-right: 3px;
+}
+
+.sm-user-details {
+  display: flex;
+  flex-direction: column;
+  font-size: 13px;
+}
+
+.sm-user-name {
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.sm-user-email {
+  font-size: 11px;
+  font-style: italic;
+}
+
+
 .sm-home-widget-header {
   background-color: #d3d3d3
 }
+
 .sm-home-widget-title {
   padding: 10px 20px;
   font: bold 18px Open Sans,helvetica,sans-serif;
@@ -2394,4 +2442,14 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
 }
 .sm-checklist-read {
 	background-color: hsl(330 55% 24% / 1);
+}
+.sm-flexbox-layout-ct {
+	display: flex;
+	flex-wrap: wrap;
+	overflow: auto;
+	scrollbar-width: none;
+	align-content: flex-start;
+}
+.sm-flexbox-layout-ct:hover {
+	scrollbar-width: auto;
 }

@@ -3855,6 +3855,7 @@ paths:
       operationId: getUsers
       parameters:
         - $ref: '#/components/parameters/UsernameQuery'
+        - $ref: '#/components/parameters/PrivilegeQuery'
         - $ref: '#/components/parameters/UsernameMatchQuery'
       responses:
         '200':
@@ -8381,6 +8382,15 @@ components:
           - EMASS
           - MCCAST
         default: EMASS
+    PrivilegeQuery:
+      name: privilege
+      in: query
+      description: Selects Users with the specified privilege
+      schema:
+        type: string
+        enum:
+          - admin
+          - create_collection
     RetentionDateQuery:
       name: retentionDate
       in: query

@@ -120,11 +120,12 @@ module.exports.getUsers = async function getUsers (req, res, next) {
     let elevate = req.query.elevate
     let username = req.query.username
     let usernameMatch = req.query['username-match']
+    let privilege = req.query['privilege']
     let projection = req.query.projection
     if ( !elevate && projection?.length > 0) {
       throw new SmError.PrivilegeError()
     }
-    let response = await UserService.getUsers( username, usernameMatch, projection, elevate, req.userObject)
+    let response = await UserService.getUsers( username, usernameMatch, privilege, projection, elevate, req.userObject)
     res.json(response)
   }
   catch(err) {

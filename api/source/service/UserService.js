@@ -109,6 +109,15 @@ exports.queryUsers = async function (inProjection, inPredicates, elevate, userOb
     predicates.statements.push(`ud.username ${matchStr}`)
     predicates.binds.push(inPredicates.username)
   }
+  
+  if (inPredicates.privilege) {
+    predicates.statements.push(
+      `JSON_CONTAINS(JSON_EXTRACT(ud.lastClaims, ?), ?) `
+    )
+    predicates.binds.push(`$.${config.oauth.claims.privilegesPath}`, JSON.stringify([inPredicates.privilege]))
+  }
+  
+  
   if (needsCollectionGrantees) {
     ctes.push(dbUtils.sqlGrantees({userId: inPredicates.userId, username: inPredicates.username, returnCte: true}))
   }
@@ -293,11 +302,12 @@ exports.getUserByUsername = async function(username, projection, elevate, userOb
   }
 }
 
-exports.getUsers = async function(username, usernameMatch, projection, elevate, userObject) {
+exports.getUsers = async function(username, usernameMatch, privilege, projection, elevate, userObject) {
   try {
     let rows = await _this.queryUsers( projection, {
       username: username,
-      usernameMatch: usernameMatch
+      usernameMatch: usernameMatch,
+      privilege: privilege
     }, elevate, userObject)
     return (rows)
   }

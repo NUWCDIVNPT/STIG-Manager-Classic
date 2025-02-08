@@ -200,6 +200,7 @@ const STIGMAN = {
   Env: {
     version: "${config.version}",
     apiBase: "${config.client.apiBase}",
+    displayAppManagers: ${config.client.displayAppManagers},
     welcome: {
       image: "${config.client.welcome.image}",
       title: "${config.client.welcome.title.replace(/"/g, '\\"')}",

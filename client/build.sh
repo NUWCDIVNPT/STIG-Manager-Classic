@@ -111,6 +111,7 @@ uglifyjs \
 'SM/Global.js' \
 'SM/StackTrace.js' \
 'SM/Error.js' \
+'SM/FlexboxLayout.js' \
 'BufferView.js' \
 'SM/EventDispatcher.js' \
 'SM/Cache.js' \

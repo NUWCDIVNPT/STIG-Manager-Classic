@@ -20,6 +20,7 @@ const scripts = [
   'js/stigmanUtils.js',
   'js/SM/Global.js',
   'js/SM/Error.js',
+  'js/SM/FlexboxLayout.js',
   'js/BufferView.js',
   'js/SM/EventDispatcher.js',
   'js/SM/Cache.js',

@@ -2369,6 +2369,10 @@ td.sort-asc, td.sort-desc, td.x-grid3-hd-menu-open, td.x-grid3-hd-over {
     background-color: #2b2e30
 }
 
+.sm-user-list {
+    background-color: #2b2e30;
+}
+
 .sm-home-widget-header {
     background-color: #313537
 }

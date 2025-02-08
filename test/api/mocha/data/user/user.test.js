@@ -184,6 +184,33 @@ describe('user', () => {
             expect(res.body[0].userGroups, "expect user to be in TestGroup").to.eql([{ userGroupId: reference.testCollection.testGroup.userGroupId, name: reference.testCollection.testGroup.name }])
 
           })
+          it("should return all users with admin privileges", async () => {
+
+            const res = await utils.executeRequest(`${config.baseUrl}/users?elevate=true&privilege=admin`, 'GET', iteration.token)
+
+            if(iteration.name != "stigmanadmin"){
+              expect(res.status).to.eql(403)
+              return
+            }
+            expect(res.status).to.eql(200)
+
+            for(const user of res.body) {
+              expect(user.privileges.admin, "expect user to have admin privilege").to.be.true
+            }
+          })
+          it("should return all users with create_collection privileges", async () => {
+
+            const res = await utils.executeRequest(`${config.baseUrl}/users?elevate=true&privilege=create_collection`, 'GET', iteration.token)
+
+            if(iteration.name != "stigmanadmin"){
+              expect(res.status).to.eql(403)
+              return
+            }
+            expect(res.status).to.eql(200)
+            for(const user of res.body) {
+              expect(user.privileges.create_collection, "expect user to have create_collection privilege").to.be.true
+            }
+          })
           it("should throw SmError.PrivilegeError no elevate with projections.", async () => {
             const res = await utils.executeRequest(`${config.baseUrl}/users?projection=collectionGrants`, 'GET', iteration.token)
             expect(res.status).to.eql(403)

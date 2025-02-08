@@ -15,6 +15,8 @@
 | The location of the web client files, relative to the API source directory. Note that if running source from a clone of the GitHub repository, the client is located at `../../clients` relative to the API directory. ","API, Client"
 "STIGMAN_CLIENT_DISABLED","| **Default** ``false``
 | Whether to *not* serve the reference web client","Client"
+"STIGMAN_CLIENT_DISPLAY_APPMANAGERS","| **Default** ``true``
+| Whether to display application managers the home page of web client","Client"
 "STIGMAN_CLIENT_EXTRA_SCOPES","| **No default**
 | A space separated list of OAuth2 scopes to request in addition to ``stig-manager:stig`` ``stig-manager:stig:read`` ``stig-manager:collection`` ``stig-manager:user`` ``stig-manager:user:read`` ``stig-manager:op``. Some OIDC providers (Okta) generate a refresh token only if the scope ``offline_access`` is requested","Client"
 "STIGMAN_CLIENT_ID","| **Default** ``stig-manager``

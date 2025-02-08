@@ -113,35 +113,35 @@ async function loadApp () {
 
 		const appTitleHtml = `<div class='sm-home-title'>
 		STIG Manager<span id='sm-home-oss-sprite'>OSS</span><span id='sm-home-version-sprite'>${STIGMAN.Env.version}</span></div>`
-		
 		const homeTab = new SM.HomeTab({
 			border: false,
 			region: 'center',
-			layout: 'table',
+			layout: 'vbox',
 			layoutConfig: {
-				tableAttrs: {
-					style: {
-						padding: '20px',
-						"table-layout": 'fixed'
-
-					}
-				},
-				columns: 3
+				align: 'stretch',
 			},
 			items: [
 				{
 					html: appTitleHtml,
-					colspan: 3,
+					height: 80,
 					border: false
 				},
 				{
-					xtype: 'sm-home-widget-welcome'
-				},
-				{
-					xtype: 'sm-home-widget-doc'
-				},
-				{
-					xtype: 'sm-home-widget-resources'
+					layout: 'sm-flexbox',
+					flex: 1,
+					border: false,
+					items: [
+						{
+							xtype: 'sm-home-widget-welcome'
+						},
+						{
+							xtype: 'sm-home-widget-doc'
+						},
+						{
+							xtype: 'sm-home-widget-resources'
+						},
+						...(STIGMAN.Env.displayAppManagers ? [{ xtype: 'sm-home-widget-app-managers' }] : [])
+					]
 				}
 			]
 		})
