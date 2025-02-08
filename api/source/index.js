@@ -219,15 +219,7 @@ const STIGMAN = {
           disabled: ${config.client.refreshToken.disabled}
         },
         extraScopes: "${config.client.extraScopes ?? ''}",
-        scopePrefix: "${config.client.scopePrefix ?? ''}",
-        claims: {
-          scope: "${config.oauth.claims.scope}",
-          username: "${config.oauth.claims.username}",
-          servicename: "${config.oauth.claims.servicename}",
-          name: "${config.oauth.claims.name}",
-          privileges: "${config.oauth.claims.privileges}",
-          email: "${config.oauth.claims.email}"
-        }
+        scopePrefix: "${config.client.scopePrefix ?? ''}"
     },
     experimental: {
       appData: "${config.experimental.appData}"

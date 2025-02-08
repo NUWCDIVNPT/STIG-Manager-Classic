@@ -10,7 +10,7 @@ const SmError = require('./error')
 
 let client
 
-const privilegeGetter = new Function("obj", "return obj?." + config.oauth.claims.privileges + " || [];");
+const privilegeGetter = new Function("obj", "return obj?." + config.oauth.claims.privilegesChain + " || [];");
 
 // express middleware to validate token
 const validateToken = async function (req, res, next) {

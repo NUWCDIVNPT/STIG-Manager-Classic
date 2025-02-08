@@ -122,7 +122,7 @@ exports.queryCollection = async function ({collectionId, projections = [], eleva
       'userId', CAST(ud.userId as char),
       'username', ud.username,
       'displayName', COALESCE(
-      JSON_UNQUOTE(JSON_EXTRACT(ud.lastClaims, "$.name")),
+      JSON_UNQUOTE(JSON_EXTRACT(ud.lastClaims, "$.${config.oauth.claims.name}")),
       ud.username)),
     'roleId', cgs.roleId,
     'grantees', cgs.grantees))

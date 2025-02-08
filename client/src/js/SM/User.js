@@ -1371,7 +1371,7 @@ SM.User.showUserProps = async function showUserProps(userId) {
         apiUser.statistics.lastClaims.scope = apiUser.statistics.lastClaims.scope.split(' ')
       }
       const privileges = []
-      for (privilege in apiUser.privileges) {
+      for (const privilege in apiUser.privileges) {
         if (apiUser.privileges[privilege]) privileges.push(privilege)
       }
       const formValues = {

@@ -76,8 +76,8 @@ const config = {
             username: process.env.STIGMAN_JWT_USERNAME_CLAIM,
             servicename: process.env.STIGMAN_JWT_SERVICENAME_CLAIM,
             name: process.env.STIGMAN_JWT_NAME_CLAIM || process.env.STIGMAN_JWT_USERNAME_CLAIM || "name",
-            privileges: formatChain(process.env.STIGMAN_JWT_PRIVILEGES_CLAIM || "realm_access.roles"),
-            privilegesPath: process.env.STIGMAN_JWT_PRIVILEGES_CLAIM || "realm_access.roles",
+            privileges: formatMySqlJsonPath(process.env.STIGMAN_JWT_PRIVILEGES_CLAIM || "realm_access.roles"),
+            privilegesChain: formatJsChain(process.env.STIGMAN_JWT_PRIVILEGES_CLAIM || "realm_access.roles"),
             email: process.env.STIGMAN_JWT_EMAIL_CLAIM || "email",
             assertion: process.env.STIGMAN_JWT_ASSERTION_CLAIM || "jti"
         }
@@ -92,13 +92,17 @@ const config = {
     }
 }
 
-function formatChain(path) {
+function formatJsChain(path) {
     const components = path?.split('.')
     if (components?.length === 1) return path
     for (let x=0; x < components.length; x++) {
       components[x] = `['${components[x]}']`
     }
     return components.join('?.')
-  }
+}
+
+function formatMySqlJsonPath(path) {
+    return path?.split('.').map(p => `"${p}"`).join('.')
+}
   
-module.exports = config
+module.exports = config 

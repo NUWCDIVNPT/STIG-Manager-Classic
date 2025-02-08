@@ -82,8 +82,8 @@ exports.queryUsers = async function (inProjection, inPredicates, elevate, userOb
     binds: [
       `$.${config.oauth.claims.email}`,
       `$.${config.oauth.claims.name}`,
-      `$.${config.oauth.claims.privilegesPath}`,
-      `$.${config.oauth.claims.privilegesPath}`
+      `$.${config.oauth.claims.privileges}`,
+      `$.${config.oauth.claims.privileges}`
     ]
   }
   if (inPredicates.userId) {

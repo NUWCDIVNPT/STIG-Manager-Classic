@@ -62,19 +62,19 @@
 "STIGMAN_LOG_MODE","| **Default** ``combined``
 | Controls whether the logs will create one “combined” log entry for http requests that includes both the request and response information; or two separate log entries, one for the request and one for the response, that can be correlated via a generated Request GUID in each entry","API"
 "STIGMAN_JWT_ASSERTION_CLAIM","| **Default** ``jti``
-| The access token claim whose value is the OIDC provider's Assertion ID. Updates to this value trigger the API to update a User's ``lastClaims`` property. The claim MUST be a top-level claim and cannot be nested.","API"
+| The access token claim whose value is the OIDC provider's Assertion ID. Updates to this value trigger the API to update a User's ``lastClaims`` property. The claim MUST NOT be nested and MUST be a valid ECMAScript identifier.","API"
 "STIGMAN_JWT_EMAIL_CLAIM","| **Default** ``email``
-| The access token claim whose value is the user's email address","API, Client"
+| The access token claim whose value is the user's email address. The claim MUST NOT be nested and MUST be a valid ECMAScript identifier.","API, Client"
 "STIGMAN_JWT_NAME_CLAIM","| **Default** ``name``
-| The access token claim whose value is the user's full name","API, Client"
+| The access token claim whose value is the user's full name. The claim MUST NOT be nested and MUST be a valid ECMAScript identifier.","API, Client"
 "STIGMAN_JWT_PRIVILEGES_CLAIM","| **Default** ``realm_access.roles``
-| The access token claim whose value is the user’s privileges ","API, Client"
+| The access token claim whose value is the user’s privileges. The claim MAY be nested but SHOULD avoid invalid ECMAScript identifiers. ","API, Client"
 "STIGMAN_JWT_SCOPE_CLAIM","| **Default** ``scope``
-| The access token claim whose value is the user's scopes. Some OIDC Providers (Okta, Azure AD) use the claim ``scp`` to enumerate scopes","API, Client"
+| The access token claim whose value is the user's scopes. Some OIDC Providers (Okta, Azure AD) use the claim ``scp`` to enumerate scopes. The claim MUST NOT be nested and MUST be a valid ECMAScript identifier.","API, Client"
 "STIGMAN_JWT_SERVICENAME_CLAIM","| **Default** ``clientId``
-| The access token claim whose value is the user's client","API, Client"
+| The access token claim whose value is the user's client. The claim MUST NOT be nested and MUST be a valid ECMAScript identifier.","API, Client"
 "STIGMAN_JWT_USERNAME_CLAIM","| **Default** ``preferred_username``
-| The access token claim whose value is the user's username","API, Client"
+| The access token claim whose value is the user's username. The claim MUST NOT be nested and MUST be a valid ECMAScript identifier.","API, Client"
 "STIGMAN_OIDC_PROVIDER","| **Default** ``http://localhost:8080/auth/realms/stigman``
 | The base URL of the OIDC provider issuing signed JWTs for the API.  The string ``/.well-known/openid-configuration`` will be appended when fetching metadata.","API, Client     "
 "STIGMAN_SWAGGER_ENABLED","| **Default** ``false``
