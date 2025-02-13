@@ -74,8 +74,10 @@ function getPoolConfig() {
   }
   return poolConfig
 }
-
-module.exports.initializeDatabase = async function (depStatus) {
+/*
+* setDepStatus is a function that sets the status of a dependency
+*/
+module.exports.initializeDatabase = async function (setDepStatus) {
   // Create the connection pool
   const poolConfig = getPoolConfig()
   logger.writeDebug('mysql', 'poolConfig', { ...poolConfig })
@@ -161,13 +163,13 @@ module.exports.initializeDatabase = async function (depStatus) {
     else {
       logger.writeInfo('mysql', 'migration', { message: `MySQL schema is up to date` })
     }
-    depStatus.db = 'up'
+    setDepStatus('db', 'up')
     const migrated = await umzug.executed()
     config.lastMigration = parseInt(migrated[migrated.length -1].file.substring(0,4))
   }
   catch (error) {
     logger.writeError('mysql', 'initalization', { message: error.message })
-    depStatus.db = 'failed'
+    setDepStatus('db', 'failed')
     throw new Error('Failed during database initialization or migration.')
   } 
 }

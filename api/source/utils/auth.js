@@ -155,7 +155,10 @@ const setupJwks = async function (jwksUri) {
 }
 
 let initAttempt = 0
-async function initializeAuth(depStatus) {
+/*
+* setDepStatus is a function that sets the status of a dependency
+*/
+async function initializeAuth(setDepStatus) {
     const retries = 24
     const metadataUri = `${config.oauth.authority}/.well-known/openid-configuration`
     let jwksUri
@@ -182,7 +185,7 @@ async function initializeAuth(depStatus) {
     })
 
     logger.writeInfo('oidc', 'discovery', { success: true, metadataUri, jwksUri })
-    depStatus.auth = 'up'
+    setDepStatus('auth', 'up')
 }
 
 module.exports = {validateToken, setupUser, validateOauthSecurity, initializeAuth, privilegeGetter}
